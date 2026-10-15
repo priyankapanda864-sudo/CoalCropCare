@@ -1,0 +1,157 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Student researcher or farmer profile for CoalCrop Care",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "Unique user ID matching Firebase Auth UID"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "description": "Full name of the researcher or farmer"
+        },
+        "grade": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50,
+          "description": "Class or grade level (e.g. Class 7)"
+        },
+        "school": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 150,
+          "description": "School name or institution"
+        },
+        "role": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "description": "Research role or farmer designation"
+        },
+        "guideTeacher": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "description": "Teacher mentor or science guide"
+        },
+        "bio": {
+          "type": "string",
+          "maxLength": 1000,
+          "description": "Brief biography or research objective"
+        },
+        "photoUrl": {
+          "type": "string",
+          "maxLength": 500000,
+          "description": "Profile picture URL or compressed base64 image data"
+        },
+        "updatedAt": {
+          "type": "string",
+          "maxLength": 50,
+          "description": "Timestamp of the profile update"
+        }
+      },
+      "required": ["userId", "name", "role"]
+    },
+    "FieldObservation": {
+      "title": "FieldObservation",
+      "description": "Field record of crop, soil, and dust observations near coal mining areas",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "Unique observation record ID"
+        },
+        "userId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "Auth UID of the submitter"
+        },
+        "farmerName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "description": "Name of the farmer or observer"
+        },
+        "village": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "description": "Village or community location"
+        },
+        "crop": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "description": "Crop being inspected"
+        },
+        "date": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 30,
+          "description": "Date of observation"
+        },
+        "fieldLocation": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 150,
+          "description": "Plot or field description"
+        },
+        "distanceFromMine": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "description": "Distance from coal mine or transport road"
+        },
+        "leafCondition": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "Observations of leaf dust or discoloration"
+        },
+        "soilCondition": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "Soil condition observations"
+        },
+        "waterCondition": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "Water source appearance"
+        },
+        "additionalNotes": {
+          "type": "string",
+          "maxLength": 2000,
+          "description": "Any additional field notes"
+        },
+        "createdAt": {
+          "type": "string",
+          "maxLength": 50,
+          "description": "Creation timestamp"
+        }
+      },
+      "required": ["id", "farmerName", "village", "crop", "date"]
+    }
+  },
+  "firestore": {
+    "/userProfiles/{userId}": {
+      "schema": "UserProfile",
+      "description": "User and researcher profile records"
+    },
+    "/fieldObservations/{observationId}": {
+      "schema": "FieldObservation",
+      "description": "Crop and soil field observation logs"
+    }
+  }
+}

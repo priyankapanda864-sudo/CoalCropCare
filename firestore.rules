@@ -1,0 +1,102 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny all unknown paths
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'priyankapanda864@gmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    // User Profile Validation
+    function isValidUserProfile(data) {
+      return data.keys().hasAll(['userId', 'name', 'role']) &&
+        data.keys().hasOnly(['userId', 'name', 'grade', 'school', 'role', 'guideTeacher', 'bio', 'photoUrl', 'updatedAt']) &&
+        data.userId is string && data.userId.size() > 0 && data.userId.size() <= 128 &&
+        data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+        data.role is string && data.role.size() > 0 && data.role.size() <= 100 &&
+        (!('grade' in data) || (data.grade is string && data.grade.size() <= 50)) &&
+        (!('school' in data) || (data.school is string && data.school.size() <= 150)) &&
+        (!('guideTeacher' in data) || (data.guideTeacher is string && data.guideTeacher.size() <= 100)) &&
+        (!('bio' in data) || (data.bio is string && data.bio.size() <= 1000)) &&
+        (!('photoUrl' in data) || data.photoUrl == null || (data.photoUrl is string && data.photoUrl.size() <= 500000)) &&
+        (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 50));
+    }
+
+    // Field Observation Validation
+    function isValidFieldObservation(data) {
+      return data.keys().hasAll(['id', 'farmerName', 'village', 'crop', 'date']) &&
+        data.keys().hasOnly(['id', 'userId', 'farmerName', 'village', 'crop', 'date', 'fieldLocation', 'distanceFromMine', 'leafCondition', 'soilCondition', 'waterCondition', 'additionalNotes', 'createdAt']) &&
+        data.id is string && data.id.size() > 0 && data.id.size() <= 128 &&
+        data.farmerName is string && data.farmerName.size() > 0 && data.farmerName.size() <= 100 &&
+        data.village is string && data.village.size() > 0 && data.village.size() <= 100 &&
+        data.crop is string && data.crop.size() > 0 && data.crop.size() <= 100 &&
+        data.date is string && data.date.size() > 0 && data.date.size() <= 30 &&
+        (!('userId' in data) || (data.userId is string && data.userId.size() <= 128)) &&
+        (!('fieldLocation' in data) || (data.fieldLocation is string && data.fieldLocation.size() <= 150)) &&
+        (!('distanceFromMine' in data) || (data.distanceFromMine is string && data.distanceFromMine.size() <= 100)) &&
+        (!('leafCondition' in data) || (data.leafCondition is string && data.leafCondition.size() <= 200)) &&
+        (!('soilCondition' in data) || (data.soilCondition is string && data.soilCondition.size() <= 200)) &&
+        (!('waterCondition' in data) || (data.waterCondition is string && data.waterCondition.size() <= 200)) &&
+        (!('additionalNotes' in data) || (data.additionalNotes is string && data.additionalNotes.size() <= 2000)) &&
+        (!('createdAt' in data) || (data.createdAt is string && data.createdAt.size() <= 50));
+    }
+
+    // User Profile Collection
+    match /userProfiles/{userId} {
+      allow read: if true;
+      allow create: if isVerified() && isValidId(userId) &&
+                       userId == request.auth.uid &&
+                       incoming().userId == request.auth.uid &&
+                       isValidUserProfile(incoming());
+      allow update: if isVerified() && isValidId(userId) &&
+                       (userId == request.auth.uid || isAdmin()) &&
+                       incoming().userId == existing().userId &&
+                       isValidUserProfile(incoming()) &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['name', 'grade', 'school', 'role', 'guideTeacher', 'bio', 'photoUrl', 'updatedAt']);
+      allow delete: if isVerified() && (userId == request.auth.uid || isAdmin());
+    }
+
+    // Field Observations Collection
+    match /fieldObservations/{obsId} {
+      allow read: if true;
+      allow create: if isVerified() && isValidId(obsId) &&
+                       incoming().userId == request.auth.uid &&
+                       isValidFieldObservation(incoming());
+      allow update: if isVerified() && isValidId(obsId) &&
+                       (existing().userId == request.auth.uid || isAdmin()) &&
+                       incoming().userId == existing().userId &&
+                       isValidFieldObservation(incoming()) &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['farmerName', 'village', 'crop', 'date', 'fieldLocation', 'distanceFromMine', 'leafCondition', 'soilCondition', 'waterCondition', 'additionalNotes', 'createdAt']);
+      allow delete: if isVerified() && (existing().userId == request.auth.uid || isAdmin());
+    }
+  }
+}

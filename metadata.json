@@ -1,0 +1,8 @@
+{
+  "name": "CoalCrop Care – Farmer Knowledge Centre",
+  "description": "Educational platform helping farmers, students, and rural communities understand the interactions between coal mining, crops, soil, and water with sustainable farming practices.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
